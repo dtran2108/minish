@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import stat
 
+
+# =CD====================================================================
 
 def cd(type_in):
     if len(type_in) == 1:
@@ -22,9 +25,12 @@ def cd(type_in):
             print('intek-sh: cd: HOME not set')
 
 
+# =PRINTENV=============================================================
+
 def printenv(type_in):
     if len(type_in) == 1:
-        print(os.environ)
+        for key in os.environ.keys():
+            print(key + '=' + os.environ[key])
     else:
         variable = type_in[1]
         try:
@@ -32,6 +38,8 @@ def printenv(type_in):
         except KeyError:
             return
 
+
+# =EXPORT==============================================================
 
 def export(type_in):
     if len(type_in) == 1:
@@ -44,6 +52,8 @@ def export(type_in):
         os.environ[variable[0]] = variable[1]
 
 
+# =UNSET================================================================
+
 def unset(type_in):
     if len(type_in) == 1:
         return
@@ -54,23 +64,34 @@ def unset(type_in):
         return
 
 
+# =EXIT=================================================================
+
 def sh_exit(type_in):
     if len(type_in) == 1:
         print('exit')
     elif type_in[1].isdigit():
         print('exit')
     else:
-        print('exit\nintek-sh: exit')
-    exit()
+        print('exit\nintek-sh: exit:')
+    raise SystemExit
+
+
+# =SCRIPT================================================================
+
+def isexecutable(file):
+    st = os.stat(file)
+    return bool(st.st_mode & stat.S_IXOTH)
 
 
 def run_script(type_in):
     script = type_in
-    try:
+    if isexecutable(script[0]):
         subprocess.run(script)
-    except PermissionError:
+    else:
         print('intek-sh: %s: Permission denied' % script[0])
 
+
+# =MAIN=================================================================
 
 def get_input():
     type_in = input('intek-sh$ ')
@@ -80,7 +101,7 @@ def get_input():
     type_in = type_in.split(' ')
     while '' in type_in:
         type_in.remove('')
-    return type_in[0], type_in
+    return type_in[0], type_in[1:]
 
 
 def main():
