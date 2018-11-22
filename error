@@ -1,66 +1,18 @@
- 1) minish core  Should exit on exit string `exit random_string`
-
-       expected "intek-sh$ intek-sh: exit:\n" to include "intek-sh$ exit\nintek-sh: exit:"
-       Diff:
-       @@ -1,2 +1,2 @@
-       -intek-sh$ exit\nintek-sh: exit:
-       +intek-sh$ intek-sh: exit:
-
-  2) minish core  Should display all env `export random_string1=random_string2 random_string3\nprintenv`
-       expected "intek-sh$ intek-sh$ BUNDLER_ORIG_RUBYLIB=BUNDLER_ENVIRONMENT_PRESERVER_INTENTIONALLY_NIL\nBUNDLER_OR...dler/setup\nLC_TIME=en_US.UTF-8\n_=/usr/bin/python3\nnhfetklnjpxbhkmnh=srkfvxghcszznkwz\nintek-sh$ " to include "\ngxdmmgbbguxavtozeg=\n"
-
-  3) minish core  Should launch an executable if accessible in PATH `exec_me.sh`
-
-       expected: "intek-sh$ intek-sh$ No arguments\nintek-sh$ "
-            got: "intek-sh$ intek-sh$ intek-sh: my_script.sh: command not found\nintek-sh$ "
-
-       (compared using ==)
-
-       Diff:
-       @@ -1,3 +1,3 @@
-       -intek-sh$ intek-sh$ No arguments
-       +intek-sh$ intek-sh$ intek-sh: my_script.sh: command not found
-        intek-sh$
-
-  4) minish core  Should launch an executable with arguments `exec_me.sh arg arg2`
-
-       expected: "intek-sh$ intek-sh$ kigeqsgzkotnxwwokug jxfqvjcagtxioijar\nintek-sh$ "
-            got: "intek-sh$ intek-sh$ intek-sh: my_script.sh: command not found\nintek-sh$ "
-
-       (compared using ==)
-
-       Diff:
-       @@ -1,3 +1,3 @@
-       -intek-sh$ intek-sh$ kigeqsgzkotnxwwokug jxfqvjcagtxioijar
-       +intek-sh$ intek-sh$ intek-sh: my_script.sh: command not found
-        intek-sh$
-
-  5) minish core  Should launch an executable with arguments `     exec_me.sh        arg           arg2         `
-
-       expected: "intek-sh$ intek-sh$ yxkcvoydomyaztpc zzpsjdnwwtwwgkgv\nintek-sh$ "
-            got: "intek-sh$ intek-sh$ intek-sh: my_script.sh: command not found\nintek-sh$ "
-
-       (compared using ==)
-
-       Diff:
-       @@ -1,3 +1,3 @@
-       -intek-sh$ intek-sh$ yxkcvoydomyaztpc zzpsjdnwwtwwgkgv
-       +intek-sh$ intek-sh$ intek-sh: my_script.sh: command not found
-        intek-sh$
-
-  6) minish core  Should exec the right binary `./exec_me.sh`
+ 1) minish core  Should exec the right binary `./exec_me.sh`
 
        expected: "intek-sh$ intek-sh$ No arguments\nintek-sh$ intek-sh$ No arguments\nintek-sh$ intek-sh$ No arguments !!\nintek-sh$ "
-            got: "intek-sh$ intek-sh$ intek-sh: my_script_2.sh: command not found\nintek-sh$ intek-sh$ intek-sh: my_sc....sh: command not found\nintek-sh$ intek-sh$ intek-sh: my_script_2.sh: command not found\nintek-sh$ "
+            got: "intek-sh$ intek-sh$ No arguments !!\nintek-sh$ intek-sh$ No arguments\nNo arguments !!\nintek-sh$ intek-sh$ No arguments !!\nNo arguments\nintek-sh$ "
 
        (compared using ==)
 
        Diff:
-       @@ -1,5 +1,5 @@
+
+
+       @@ -1,5 +1,7 @@
+       +intek-sh$ intek-sh$ No arguments !!
+        intek-sh$ intek-sh$ No arguments
        -intek-sh$ intek-sh$ No arguments
-       -intek-sh$ intek-sh$ No arguments
-       -intek-sh$ intek-sh$ No arguments !!
-       +intek-sh$ intek-sh$ intek-sh: my_script_2.sh: command not found
-       +intek-sh$ intek-sh$ intek-sh: my_script_2.sh: command not found
-       +intek-sh$ intek-sh$ intek-sh: my_script_2.sh: command not found
-        intek-sh$
+       +No arguments !!
+        intek-sh$ intek-sh$ No arguments !!
+       +No arguments
+        intek-sh$ 
