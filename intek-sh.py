@@ -77,61 +77,30 @@ def sh_exit(type_in):
         print('exit\nintek-sh: exit:')
 
 
-# =SCRIPT=======================================================================
-
-def isexecutable(file):
-    st = os.stat(file)
-    return bool(st.st_mode & stat.S_IXOTH)
-
-
-def run_script(type_in):
-    script = type_in
-    if isexecutable(script[0]):
-        subprocess.run(script)
-    else:
-        print('intek-sh: %s: Permission denied' % script[0])
-
-
 # =RUN_FILE=====================================================================
 
-def getPath():
-    if 'PATH' not in os.environ:
-        return []
-    elif ':' in os.environ['PATH']:
-        return os.environ['PATH'].split(':')
-    elif '.' in os.environ['PATH']:
-        return [os.getcwd()]
-
-
-def get_str_arg(type_in):
-    temp = []
-    for i in type_in:
-        if type_in.index(i) != 0:
-            if type_in.index(i) != len(type_in) - 1:
-                temp.append(i)
-            else:
-                temp.append(i)
-    return temp
-
-
-def run_file_in_path(type_in):
-    paths = getPath()
-    flag = True
-    if len(paths) > 0:
-        for i in paths:
-            file = i + '/' + type_in[0]
-            if os.path.exists(file):
-                if os.access(file, os.X_OK):
-                    runlst = []
-                    runlst.append(file)
-                    if len(type_in) > 1:
-                        arg = get_str_arg(type_in)
-                        for i in arg:
-                            runlst.append(i)
-                    subprocess.run(runlst)
-                    flag = False
-    if flag:
-        print("intek-sh: " + type_in[0] + ": command not found")
+def run_file(type_in):
+    flag = False
+    if './' in type_in[0]:
+        try:
+            subprocess.run(type_in[0])
+        except PermissionError:
+            print('intek-sh: ' + type_in[0] + ': Permission denied')
+        except FileNotFoundError:
+            print("intek-sh: " + type_in[0] + ": No such file or directory")
+    else:
+        try:
+            PATH = os.environ['PATH'].split(':')
+        except KeyError:
+            print("intek-sh: " + type_in[0] + ": command not found")
+            return
+        for item in PATH:
+            if os.path.exists(item+'/'+type_in[0]):
+                subprocess.run([item+'/'+type_in.pop(0)]+type_in)
+                flag = True
+                break
+        if not flag:
+            print("intek-sh: " + type_in[0] + ": command not found")
 
 
 # =MAIN=========================================================================
@@ -167,10 +136,8 @@ def main():
         elif command == 'exit':
             sh_exit(type_in)
             flag = False
-        elif command.startswith('./'):
-            run_script(type_in)
         else:
-            run_file_in_path(type_in)
+            run_file(type_in)
 
 
 if __name__ == '__main__':
