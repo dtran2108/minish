@@ -3,28 +3,28 @@ import os
 import subprocess
 
 
-# =CD===========================================================================
-
 def cd(type_in):
     if len(type_in) == 1:
         path = ''
     else:
         path = type_in[1]
-    if path != '':
-        try:
-            os.chdir(os.path.abspath(path))
-        except FileNotFoundError:
-            print('intek-sh: cd: %s: No such file or directory' % path)
-    elif path == '..':
-        os.chdir('../')
-    elif path == '':
+    if path:
+        if '..' in path:
+            os.chdir('../')
+            os.environ['PWD'] = os.getcwd()
+        else:
+            try:
+                os.chdir(os.path.abspath(path))
+                os.environ['PWD'] = os.getcwd()
+            except FileNotFoundError:
+                print('intek-sh: cd: %s: No such file or directory' % path)
+    else:
         if 'HOME' in os.environ:
             os.chdir(os.environ['HOME'])
+            os.environ['PWD'] = os.getcwd()
         else:
             print('intek-sh: cd: HOME not set')
 
-
-# =PRINTENV=====================================================================
 
 def printenv(type_in):
     if len(type_in) == 1:
@@ -38,8 +38,6 @@ def printenv(type_in):
             return
 
 
-# =EXPORT=======================================================================
-
 def export(type_in):
     if len(type_in) == 1:
         return
@@ -52,8 +50,6 @@ def export(type_in):
             os.environ[variable[0]] = variable[1]
 
 
-# =UNSET========================================================================
-
 def unset(type_in):
     if len(type_in) == 1:
         return
@@ -65,21 +61,14 @@ def unset(type_in):
             return
 
 
-# =EXIT=========================================================================
-
 def sh_exit(type_in):
-    if len(type_in) == 1:
-        print('exit')
-    elif type_in[1].isdigit():
-        print('exit')
-    else:
-        print('exit\nintek-sh: exit:')
+    print('exit')
+    if len(type_in) > 1 and not type_in[1].isdigit():
+        print('intek-sh: exit:')
 
-
-# =RUN_FILE=====================================================================
 
 def run_file(type_in):
-    flag = False
+    check = False
     if './' in type_in[0]:
         try:
             subprocess.run(type_in[0])
@@ -96,13 +85,11 @@ def run_file(type_in):
         for item in PATH:
             if os.path.exists(item+'/'+type_in[0]):
                 subprocess.run([item+'/'+type_in.pop(0)]+type_in)
-                flag = True
+                check = True
                 break
-        if not flag:
+        if not check:
             print("intek-sh: " + type_in[0] + ": command not found")
 
-
-# =MAIN=========================================================================
 
 def get_input():
     type_in = input('intek-sh$ ')
