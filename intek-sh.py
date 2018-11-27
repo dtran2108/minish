@@ -94,11 +94,16 @@ def run_file(type_in):
 def get_input():
     type_in = input('intek-sh$ ')
     type_in = type_in.split(' ')
+    print('split: ', type_in)
+
     while '' in type_in:
         type_in.remove('')
+    print('remove: ', type_in)
+
     if type_in == []:
         get_input()
-    print(type_in)
+        print('recurse: ', type_in)
+
     return type_in[0], type_in
 
     # while type_in == '' or type_in == ' ':
