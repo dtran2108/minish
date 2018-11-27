@@ -35,7 +35,7 @@ def printenv(type_in):
         if variable in os.environ.keys():
             print(os.environ[variable])
         else:
-            return
+            return None
 
 
 def export(type_in):
@@ -52,13 +52,13 @@ def export(type_in):
 
 def unset(type_in):
     if len(type_in) == 1:
-        return
+        return None
     variables = type_in[1:]
     for variable in variables:
         if variable in os.environ.keys():
             del os.environ[variable]
         else:
-            return
+            return None
 
 
 def sh_exit(type_in):
@@ -93,13 +93,21 @@ def run_file(type_in):
 
 def get_input():
     type_in = input('intek-sh$ ')
-    while type_in == '' or type_in == ' ':
-        type_in = input('intek-sh$ ')
-    # handle multiple spaces
     type_in = type_in.split(' ')
     while '' in type_in:
         type_in.remove('')
+    if type_in == []:
+        get_input()
+    print(type_in)
     return type_in[0], type_in
+
+    # while type_in == '' or type_in == ' ':
+    #     type_in = input('intek-sh$ ')
+    # # handle multiple spaces
+    # type_in = type_in.split(' ')
+    # while '' in type_in:
+    #     type_in.remove('')
+    # return type_in[0], type_in
 
 
 def main():
@@ -109,17 +117,17 @@ def main():
             command, type_in = get_input()
         except EOFError:
             return
-        if command == 'pwd':
+        if 'pwd' in command:
             print(os.getcwd())
-        elif command == 'cd':
+        elif 'cd' in command:
             cd(type_in)
-        elif command == 'printenv':
+        elif 'printenv' in command:
             printenv(type_in)
-        elif command == 'export':
+        elif 'export' in command:
             export(type_in)
-        elif command == 'unset':
+        elif 'unset' in command:
             unset(type_in)
-        elif command == 'exit':
+        elif 'exit' in command:
             sh_exit(type_in)
             flag = False
         else:
