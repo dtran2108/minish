@@ -1,118 +1,121 @@
 #!/usr/bin/env python3
-import os
-import subprocess
+from os import chdir, environ, getcwd, path
+from subprocess import run
 
 
-def cd(type_in):
-    if len(type_in) == 1:
-        path = ''
+'''
+pwd     : print working directory
+cd      : change directory
+printenv: print all or part of environment
+export  : mark each name to be passed to child processes in the environment
+unset   : remove each variable or function name
+exit    : end process
+'''
+
+# check if args is more than 1
+def check_args(args):
+    if len(args) is not 1:
+        return True
     else:
-        path = type_in[1]
-    if path:
-        if '..' in path:
-            os.chdir('../')
-            os.environ['PWD'] = os.getcwd()
+        return False
+
+
+# change the path and set environ PWD as the path
+def change_dir(dir_path):
+    chdir(dir_path)
+    environ['PWD'] = getcwd()
+
+
+def cd(cd_args):
+    _path = None
+
+    # if args is more than 1 -> path is the last argument
+    if check_args(cd_args):
+        _path = cd_args[1]
+    if _path:
+        if _path is '..':
+            change_dir('..')
         else:
             try:
-                os.chdir(os.path.abspath(path))
-                os.environ['PWD'] = os.getcwd()
+                change_dir(path.abspath(_path))
             except FileNotFoundError:
-                print('intek-sh: cd: %s: No such file or directory' % path)
-    else:
-        if 'HOME' in os.environ:
-            os.chdir(os.environ['HOME'])
-            os.environ['PWD'] = os.getcwd()
+                print('intek-sh: cd: ' + _path + ': No such file or directory')
+    else:  # if len path is 1 -> jump to HOME
+        if 'HOME' in environ:
+            change_dir(environ['HOME'])
         else:
             print('intek-sh: cd: HOME not set')
 
 
-def printenv(type_in):
-    if len(type_in) == 1:
-        for key in os.environ.keys():
-            print(key + '=' + os.environ[key])
-    else:
-        variable = type_in[1]
-        if variable in os.environ.keys():
-            print(os.environ[variable])
-        else:
-            return None
+def printenv(printenv_args):
+    # if len type_in is 1 -> print all the environment
+    if not check_args(printenv_args):
+        for key in environ.keys():
+            print(key + '=' + environ[key])
+    else: # print the value of the key(printenv_args[1])
+        if printenv_args[1] in environ.keys():
+            print(environ[printenv_args[1]])
 
 
-def export(type_in):
-    if len(type_in) == 1:
-        return
-    variables = type_in[1:]
-    for variable in variables:
-        if '=' not in variable:
-            os.environ[variable] = ''
-        else:
-            variable = variable.split('=')
-            os.environ[variable[0]] = variable[1]
+def export(export_args):
+    if check_args(export_args):
+        variables = export_args[1:]
+        for variable in variables:
+            if '=' not in variable:
+                environ[variable] = ''
+            else:
+                variable = variable.split('=')
+                environ[variable[0]] = variable[1]
 
 
-def unset(type_in):
-    if len(type_in) == 1:
-        return None
-    variables = type_in[1:]
-    for variable in variables:
-        if variable in os.environ.keys():
-            del os.environ[variable]
-        else:
-            return None
+def unset(unset_args):
+    if check_args(unset_args):
+        variables = unset_args[1:]
+        for variable in variables:
+            if variable in environ.keys():
+                del environ[variable]
 
 
-def sh_exit(type_in):
+def sh_exit(exit_args):
     print('exit')
-    if len(type_in) > 1 and not type_in[1].isdigit():
+    if check_args(exit_args) and not exit_args[1].isdigit():
         print('intek-sh: exit:')
 
 
-def run_file(type_in):
+def run_file(file_args):
     check = False
-    if './' in type_in[0]:
+    if './' in file_args[0]:
         try:
-            subprocess.run(type_in[0])
+            run(file_args[0])
         except PermissionError:
-            print('intek-sh: ' + type_in[0] + ': Permission denied')
+            print('intek-sh: ' + file_args[0] + ': Permission denied')
         except FileNotFoundError:
-            print("intek-sh: " + type_in[0] + ": No such file or directory")
+            print("intek-sh: " + file_args[0] + ": No such file or directory")
     else:
         try:
-            PATH = os.environ['PATH'].split(':')
-        except KeyError:
-            print("intek-sh: " + type_in[0] + ": command not found")
-            return
+            # find all the possible paths
+            PATH = environ['PATH'].split(':')
+        except KeyError as e:
+            print("intek-sh: " + file_args[0] + ": command not found")
+            return e
         for item in PATH:
-            if os.path.exists(item+'/'+type_in[0]):
-                subprocess.run([item+'/'+type_in.pop(0)]+type_in)
+            if path.exists(item+'/'+file_args[0]):
+                run([item+'/'+file_args.pop(0)]+file_args)
                 check = True
                 break
-        if not check:
-            print("intek-sh: " + type_in[0] + ": command not found")
+        if not check: # if the command didn't run
+            print("intek-sh: " + file_args[0] + ": command not found")
 
 
 def get_input():
-    type_in = input('intek-sh$ ')
-    type_in = type_in.split(' ')
-    print('split: ', type_in)
-
-    while '' in type_in:
-        type_in.remove('')
-    print('remove: ', type_in)
-
-    if type_in == []:
-        get_input()
-        print('recurse: ', type_in)
-
-    return type_in[0], type_in
-
-    # while type_in == '' or type_in == ' ':
-    #     type_in = input('intek-sh$ ')
-    # # handle multiple spaces
-    # type_in = type_in.split(' ')
-    # while '' in type_in:
-    #     type_in.remove('')
-    # return type_in[0], type_in
+    args = input('intek-sh$ ')
+    while args == '' or args == ' ':
+        args = input('intek-sh$ ')
+    # handle multiple spaces
+    args = args.split(' ')
+    while '' in args:
+        args.remove('')
+    return args[0], args
 
 
 def main():
@@ -120,10 +123,10 @@ def main():
     while flag:
         try:
             command, type_in = get_input()
-        except EOFError:
-            return
+        except EOFError as e:
+            return e
         if 'pwd' in command:
-            print(os.getcwd())
+            print(environ['PWD'])
         elif 'cd' in command:
             cd(type_in)
         elif 'printenv' in command:
