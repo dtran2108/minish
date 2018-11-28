@@ -109,6 +109,17 @@ def run_file(file_args):
 
 def get_input():
     args = input('intek-sh$ ')
+    # args = args.split(' ')
+    # args = list(set(args))
+    # try:
+    #     args.remove('')
+    #     args.remove(None)
+    # except ValueError:
+    #     pass
+    # if args:
+    #     return args[0], args
+    # get_input()
+    # return args
     while args == '' or args == ' ':
         args = input('intek-sh$ ')
     # handle multiple spaces
@@ -123,6 +134,7 @@ def main():
     while flag:
         try:
             command, type_in = get_input()
+            print(command, type_in)
         except EOFError as e:
             return e
         if 'pwd' in command:
