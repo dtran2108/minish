@@ -3,38 +3,32 @@ from os import chdir, environ, getcwd, path
 from subprocess import run
 
 
-'''
-pwd     : print working directory
-cd      : change directory
-printenv: print all or part of environment
-export  : mark each name to be passed to child processes in the environment
-unset   : remove each variable or function name
-exit    : end process
-'''
-
-# check if args is more than 1
 def check_args(args):
+    """ check if args is more than 1 """
     if len(args) is not 1:
         return True
     else:
         return False
 
 
-# change the path and set environ PWD as the path
 def change_dir(dir_path):
+    """ change the path and set environ PWD as the path """
+    environ['OLDPWD'] = getcwd()
     chdir(dir_path)
     environ['PWD'] = getcwd()
 
 
 def cd(cd_args):
+    """ change to the required directory"""
     _path = None
-
     # if args is more than 1 -> path is the last argument
     if check_args(cd_args):
         _path = cd_args[1]
     if _path:
         if _path is '..':
             change_dir('..')
+        elif _path is '-':
+            change_dir(environ['OLDPWD'])
         else:
             try:
                 change_dir(path.abspath(_path))
@@ -48,6 +42,7 @@ def cd(cd_args):
 
 
 def printenv(printenv_args):
+    """ print all the environment or part of it """
     # if len type_in is 1 -> print all the environment
     if not check_args(printenv_args):
         for key in environ.keys():
@@ -58,6 +53,7 @@ def printenv(printenv_args):
 
 
 def export(export_args):
+    """ set the key for environment PATH """
     if check_args(export_args):
         variables = export_args[1:]
         for variable in variables:
@@ -69,6 +65,7 @@ def export(export_args):
 
 
 def unset(unset_args):
+    """ remove the key from environment PATH """
     if check_args(unset_args):
         variables = unset_args[1:]
         for variable in variables:
@@ -77,12 +74,14 @@ def unset(unset_args):
 
 
 def sh_exit(exit_args):
+    """ exit """
     print('exit')
     if check_args(exit_args) and not exit_args[1].isdigit():
         print('intek-sh: exit:')
 
 
 def run_file(file_args):
+    """ run the external file """
     check = False
     if './' in file_args[0]:
         try:
@@ -99,6 +98,7 @@ def run_file(file_args):
             print("intek-sh: " + file_args[0] + ": command not found")
             return e
         for item in PATH:
+            print(item)
             if path.exists(item+'/'+file_args[0]):
                 run([item+'/'+file_args.pop(0)]+file_args)
                 check = True
@@ -108,18 +108,8 @@ def run_file(file_args):
 
 
 def get_input():
+    """ return the command and the entire input """
     args = input('intek-sh$ ')
-    # args = args.split(' ')
-    # args = list(set(args))
-    # try:
-    #     args.remove('')
-    #     args.remove(None)
-    # except ValueError:
-    #     pass
-    # if args:
-    #     return args[0], args
-    # get_input()
-    # return args
     while args == '' or args == ' ':
         args = input('intek-sh$ ')
     # handle multiple spaces
@@ -134,12 +124,9 @@ def main():
     while flag:
         try:
             command, type_in = get_input()
-            print(command, type_in)
         except EOFError as e:
             return e
-        if 'pwd' in command:
-            print(environ['PWD'])
-        elif 'cd' in command:
+        if command == 'cd':
             cd(type_in)
         elif 'printenv' in command:
             printenv(type_in)
